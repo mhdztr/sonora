@@ -1,11 +1,7 @@
 package com.musicplayer.model;
 import java.time.LocalDateTime;
 
-/**
-
- * Model untuk riwayat pemutaran lagu
-
- */
+// Model buat play lagu
 
 public class PlayHistory {
     private Long id;

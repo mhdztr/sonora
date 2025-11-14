@@ -6,17 +6,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 
-/**
- * Service untuk merekam audio dari mikrofon
- */
+
+// Service untuk merekam audio dari mikrofon
+
 public class AudioRecordingService {
     private TargetDataLine targetLine;
     private boolean isRecording = false;
     private ByteArrayOutputStream recordedData;
 
-    /**
-     * Mulai recording dari mikrofon
-     */
+    // Start recording dari mikrofon
+
     public void startRecording() throws LineUnavailableException {
         AudioFormat format = new AudioFormat(
                 AudioFormat.Encoding.PCM_SIGNED,
@@ -53,9 +52,7 @@ public class AudioRecordingService {
         }).start();
     }
 
-    /**
-     * Stop recording dan simpan ke file
-     */
+ // Stop recording safe ke file
     public File stopRecording(String outputPath) throws IOException {
         isRecording = false;
 

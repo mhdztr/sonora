@@ -11,9 +11,7 @@ import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Enhanced Now Playing Panel dengan seek bar dan controls
- */
+// Control play music
 public class NowPlayingPanel extends JPanel {
     private MusicPlayerController controller;
     private JLabel albumArtLabel;

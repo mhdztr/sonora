@@ -278,9 +278,7 @@ public class MetadataEnrichmentService {
         return null;
     }
 
-    /**
-     * Extract genre dari title/description text
-     */
+// Ekstrak genre dari judul
     private String extractGenreFromText(String text) {
         String textLower = text.toLowerCase();
 
@@ -299,9 +297,6 @@ public class MetadataEnrichmentService {
         return null;
     }
 
-    /**
-     * Normalize genre string
-     */
     private String normalizeGenre(String genre) {
         if (genre == null || genre.isEmpty()) return "Pop";
 
@@ -330,10 +325,7 @@ public class MetadataEnrichmentService {
         return normalized;
     }
 
-    /**
-     * Estimate BPM dari genre (realistic approach)
-     * Actual BPM detection membutuhkan download file (slow)
-     */
+// Estimasi BPM
     private int estimateBPMFromGenre(String genre) {
         if (genre == null) return 120;
 
@@ -367,9 +359,7 @@ public class MetadataEnrichmentService {
         return 120; // Default BPM
     }
 
-    /**
-     * Check if track has complete metadata
-     */
+
     private boolean hasCompleteMetadata(Track track) {
         return track.getGenre() != null && !track.getGenre().isEmpty() &&
                 track.getMood() != null && !track.getMood().isEmpty() &&
@@ -378,7 +368,7 @@ public class MetadataEnrichmentService {
     }
 
     /**
-     * Set default metadata if enrichment fails
+     * MetaData Default
      */
     private void setDefaultMetadata(Track track) {
         if (track.getGenre() == null || track.getGenre().isEmpty()) {
@@ -406,18 +396,14 @@ public class MetadataEnrichmentService {
         }
     }
 
-    /**
-     * Batch enrich multiple tracks
-     */
+
     public void enrichTracksAsync(List<Track> tracks) {
         for (Track track : tracks) {
             enrichTrackAsync(track);
         }
     }
 
-    /**
-     * Shutdown executor
-     */
+
     public void shutdown() {
         executorService.shutdown();
         try {

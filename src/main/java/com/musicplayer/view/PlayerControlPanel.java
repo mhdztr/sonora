@@ -9,9 +9,7 @@ import com.musicplayer.util.IconLoader;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Updated Player Control Panel with real-time updates
- */
+// Player control di bawah
 public class PlayerControlPanel extends JPanel {
     private MusicPlayerController controller;
     private JButton playPauseButton;

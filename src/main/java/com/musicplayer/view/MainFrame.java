@@ -7,15 +7,12 @@ import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Updated Main Frame dengan method untuk switch tabs dan search
- */
+// Frame utama, logo nav, dkk
 public class MainFrame extends JFrame {
     private MusicPlayerController controller;
     private JPanel contentPanel;
     private CardLayout cardLayout;
 
-    // Navigation panels
     private LibraryPanel libraryPanel;
     private NowPlayingPanel nowPlayingPanel;
     private RecommendationPanel recommendationPanel;
@@ -29,7 +26,7 @@ public class MainFrame extends JFrame {
     }
 
     private void initializeComponents() {
-        setTitle("Smart Music Player");
+        setTitle("NAMA APP NYA APA JIR");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1200, 800);
         setLocationRelativeTo(null);
@@ -37,14 +34,18 @@ public class MainFrame extends JFrame {
         // Initialize controller first
         controller = new MusicPlayerController();
 
-        // Initialize panels (pass this reference to FingerprintPanel)
+        // Initialize panels with proper references
         libraryPanel = new LibraryPanel(controller);
+        libraryPanel.setMainFrame(this); // Set MainFrame reference
+
         nowPlayingPanel = new NowPlayingPanel(controller);
         recommendationPanel = new RecommendationPanel(controller);
         fingerprintPanel = new FingerprintPanel(controller, this);
 
-        // Set now playing panel as listener
+        // Set controller references
         controller.setNowPlayingPanel(nowPlayingPanel);
+
+        System.out.println("✅ All panels initialized");
     }
 
     private void setupLayout() {
@@ -77,11 +78,17 @@ public class MainFrame extends JFrame {
         sidebar.setPreferredSize(new Dimension(220, 0));
         sidebar.setBackground(new Color(25, 25, 28));
 
-        // App title
+        // App title with icon
+        JPanel titlePanel = new JPanel(new MigLayout("fillx", "[]", ""));
+        titlePanel.setOpaque(false);
+
         JLabel titleLabel = new JLabel("SONORA");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
         titleLabel.setForeground(Color.WHITE);
-        sidebar.add(titleLabel, "wrap, center, gaptop 10, gapbottom 20");
+        titleLabel.setIcon(IconLoader.loadLargeIcon(IconLoader.Icons.LOGO));
+        titlePanel.add(titleLabel, "center");
+
+        sidebar.add(titlePanel, "wrap, center, gaptop 10, gapbottom 20");
 
         // Navigation buttons
         addNavButton(sidebar, "Library", "Library", IconLoader.Icons.HOME);
@@ -116,21 +123,34 @@ public class MainFrame extends JFrame {
         sidebar.add(button, "wrap, growx, h 40!");
     }
 
-
     private void showPanel(String panelName) {
         cardLayout.show(contentPanel, panelName);
     }
 
     /**
-     * Public method untuk switch ke Library dan perform search
-     * Dipanggil dari FingerprintPanel setelah "Search in Player"
+     * Switch ke Library dan perform search
+     * Dipanggil dari FingerprintPanel
      */
     public void showLibraryAndSearch(String query) {
-        // Switch to Library tab
         showPanel("Library");
-
-        // Perform search
         libraryPanel.performSearchWithQuery(query);
+    }
+
+    /**
+     * Switch ke Recommendations dan play Daily Mix
+     * Dipanggil dari LibraryPanel
+     */
+    public void switchToRecommendationsAndPlay() {
+        showPanel("Recommendations");
+        // Small delay to ensure panel is shown
+        SwingUtilities.invokeLater(() -> {
+            try {
+                Thread.sleep(300);
+                recommendationPanel.playDailyMix();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
     }
 
     private void setupController() {
@@ -141,10 +161,10 @@ public class MainFrame extends JFrame {
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                // Cleanup resources
+                System.out.println("Shutting down...");
                 controller.shutdown();
+                System.exit(0);
             }
         });
     }
 }
-

@@ -11,9 +11,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Updated Controller dengan Metadata Enrichment Service
- */
+// Controller everything
+
 public class MusicPlayerController {
     private DatabaseManager dbManager;
     private YouTubeMusicService youtubeService;
@@ -21,45 +20,44 @@ public class MusicPlayerController {
     private AudioRecordingService recordingService;
     private RecommendationService recommendationService;
     private AudioPlayerService audioPlayerService;
-    private MetadataEnrichmentService enrichmentService; // NEW!
+    private MetadataEnrichmentService enrichmentService;
 
     private NowPlayingPanel nowPlayingPanel;
     private File tempRecordingFile;
 
     public MusicPlayerController() {
+        System.out.println("🔧 Initializing MusicPlayerController...");
+
         this.dbManager = DatabaseManager.getInstance();
         this.youtubeService = new YouTubeMusicService();
         this.fingerprintService = new AudioFingerprintService();
         this.recordingService = new AudioRecordingService();
         this.recommendationService = new RecommendationService();
         this.audioPlayerService = new AudioPlayerService();
-        this.enrichmentService = new MetadataEnrichmentService(); // NEW!
+        this.enrichmentService = new MetadataEnrichmentService();
 
         setupPlayerListeners();
+
+        System.out.println("✅ MusicPlayerController initialized");
     }
 
     public void initialize() {
-        // Initialization logic
+        System.out.println("🚀 Controller initialization completed");
     }
 
-    /**
-     * Setup listeners untuk player events
-     */
     private void setupPlayerListeners() {
         audioPlayerService.addPlayerStateListener(new AudioPlayerService.PlayerStateListener() {
             @Override
             public void onPlayerStateChanged(boolean isPlaying) {
-                // Player state changed (playing/paused)
+                // Player state changed
             }
 
             @Override
             public void onTrackChanged(Track track) {
-                // Update Now Playing panel
                 if (nowPlayingPanel != null) {
                     nowPlayingPanel.updateNowPlaying(track);
                 }
 
-                // Record play history
                 if (track != null) {
                     try {
                         dbManager.recordPlay(track.getId());
@@ -72,7 +70,7 @@ public class MusicPlayerController {
 
             @Override
             public void onTimeChanged(long seconds) {
-                // Time update (handled by UI timer)
+                // Time update
             }
 
             @Override
@@ -89,34 +87,47 @@ public class MusicPlayerController {
     // ========== YouTube Music Operations ==========
 
     /**
-     * Search YouTube Music - UPDATED with metadata enrichment
+     * Search YouTube Music - IMPROVED with better logging
      */
     public List<Track> searchYouTubeMusic(String query) {
-        try {
-            System.out.println("🔍 Searching YouTube Music: " + query);
+        System.out.println("\n" + "=".repeat(60));
+        System.out.println("🔍 SEARCH: " + query);
+        System.out.println("=".repeat(60));
 
-            // 1. Search via InnerTube (fast, gets basic info)
+        try {
+            // 1. Search via InnerTube API
+            System.out.println("📡 Calling YouTube Music API...");
             List<Track> tracks = youtubeService.searchTracks(query);
 
+            if (tracks == null) {
+                System.err.println("❌ Search returned null");
+                return new ArrayList<>();
+            }
+
             if (tracks.isEmpty()) {
-                System.out.println("❌ No results found");
+                System.out.println("⚠️ No results found for: " + query);
                 return tracks;
             }
 
-            System.out.println("✅ Found " + tracks.size() + " tracks");
+            System.out.println("✅ Found " + tracks.size() + " tracks:");
+            for (int i = 0; i < Math.min(3, tracks.size()); i++) {
+                Track t = tracks.get(i);
+                System.out.println("   " + (i+1) + ". " + t.getArtist() + " - " + t.getTitle());
+            }
 
-            // 2. Save basic info to database (title, artist, thumbnail)
+            // 2. Save basic info to database
+            System.out.println("💾 Saving tracks to database...");
             for (Track track : tracks) {
                 try {
-                    // Set default metadata first
+                    // Set default metadata
                     if (track.getGenre() == null || track.getGenre().isEmpty()) {
-                        track.setGenre("Music"); // Temporary
+                        track.setGenre("Music");
                     }
                     if (track.getMood() == null || track.getMood().isEmpty()) {
-                        track.setMood("Unknown"); // Temporary
+                        track.setMood("Neutral");
                     }
                     if (track.getBpm() <= 0) {
-                        track.setBpm(120); // Temporary
+                        track.setBpm(120);
                     }
 
                     dbManager.saveTrack(track);
@@ -125,10 +136,12 @@ public class MusicPlayerController {
                 }
             }
 
-            // 3. Enrich metadata in background (non-blocking!)
-            System.out.println("🔄 Starting metadata enrichment in background...");
-            enrichmentService.enrichTracksAsync(tracks);
+            // 3. Enrich metadata in background (non-blocking)
+            // DISABLED for now to avoid duplicate tracks
+            // System.out.println("🔄 Starting metadata enrichment in background...");
+            // enrichmentService.enrichTracksAsync(tracks);
 
+            System.out.println("=".repeat(60) + "\n");
             return tracks;
 
         } catch (Exception e) {
@@ -149,7 +162,7 @@ public class MusicPlayerController {
         Track track = fingerprintService.identifyTrack(tempRecordingFile);
 
         if (track != null) {
-            // Enrich metadata
+            // Enrich metadata synchronously for identified tracks
             enrichmentService.enrichTrackSync(track);
         }
 
@@ -164,7 +177,6 @@ public class MusicPlayerController {
         Track track = fingerprintService.identifyTrack(audioFile);
 
         if (track != null) {
-            // Enrich metadata
             enrichmentService.enrichTrackSync(track);
         }
 
@@ -183,8 +195,12 @@ public class MusicPlayerController {
 
     public List<Recommendation> generateDailyMix(int limit) {
         try {
-            return recommendationService.generateDailyMix(limit);
+            System.out.println("🎵 Generating Daily Mix (" + limit + " tracks)...");
+            List<Recommendation> mix = recommendationService.generateDailyMix(limit);
+            System.out.println("✅ Daily Mix generated: " + mix.size() + " tracks");
+            return mix;
         } catch (SQLException e) {
+            System.err.println("❌ Failed to generate Daily Mix: " + e.getMessage());
             e.printStackTrace();
             return new ArrayList<>();
         }
@@ -203,9 +219,11 @@ public class MusicPlayerController {
         try {
             List<Track> recentTracks = dbManager.getMostPlayedTracks(1);
             if (recentTracks.isEmpty()) {
+                System.out.println("⚠️ No play history for similar songs");
                 return new ArrayList<>();
             }
 
+            System.out.println("🔍 Finding songs similar to: " + recentTracks.get(0).getTitle());
             return recommendationService.getSimilarTracks(recentTracks.get(0), limit);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -216,6 +234,7 @@ public class MusicPlayerController {
     // ========== Playback Operations ==========
 
     public void setQueueAndPlay(List<Track> tracks, int startIndex) {
+        System.out.println("▶️ Setting queue: " + tracks.size() + " tracks, starting at index " + startIndex);
         audioPlayerService.setQueueAndPlay(tracks, startIndex);
     }
 
@@ -292,12 +311,11 @@ public class MusicPlayerController {
         }
     }
 
-    /**
-     * Cleanup resources - UPDATED
-     */
     public void shutdown() {
-        enrichmentService.shutdown(); // NEW!
+        System.out.println("🛑 Shutting down controller...");
+        enrichmentService.shutdown();
         audioPlayerService.release();
         dbManager.close();
+        System.out.println("✅ Controller shutdown complete");
     }
 }

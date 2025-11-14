@@ -9,13 +9,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Service untuk audio fingerprinting menggunakan AudD API
- * Mengenali lagu dari file audio atau rekaman mikrofon
- */
+// Audio fingerprinting pake Audd
 public class AudioFingerprintService {
     private static final String AUDD_API_URL = "https://api.audd.io/";
-    private static final String API_TOKEN = "d26a042b439531b5792f03a15af5c9cb"; // Ganti dengan token API Anda
+    private static final String API_TOKEN = "d26a042b439531b5792f03a15af5c9cb";
 
     private final OkHttpClient client;
     private final ObjectMapper mapper;
@@ -28,9 +25,7 @@ public class AudioFingerprintService {
         this.mapper = new ObjectMapper();
     }
 
-    /**
-     * Identifikasi lagu dari file audio
-     */
+// Identifkasi lagu dari file audio
     public Track identifyTrack(File audioFile) throws IOException {
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
@@ -55,9 +50,7 @@ public class AudioFingerprintService {
         }
     }
 
-    /**
-     * Parse response dari AudD API
-     */
+// Parse rersponse dari Audd
     private Track parseAuddResponse(String jsonResponse) throws IOException {
         JsonNode root = mapper.readTree(jsonResponse);
 
@@ -92,9 +85,7 @@ public class AudioFingerprintService {
         return null; // Lagu tidak ditemukan
     }
 
-    /**
-     * Generate unique track ID
-     */
+// Generate track id
     private String generateTrackId(JsonNode result) {
         String artist = result.path("artist").asText("");
         String title = result.path("title").asText("");

@@ -8,19 +8,17 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Utility untuk load custom icons dari folder resources/icons/
- * Supports png dan JPG dengan auto-resize
- */
+// Semua Icon diambil dari Google Material 3, formatnya wajib png, taro di resources > Icons
 public class IconLoader {
 
     private static final String ICON_PATH = "/icons/";
     private static final Map<String, BufferedImage> iconCache = new HashMap<>();
 
-    /**
-     * Icon names - pastikan file dengan nama ini ada di resources/icons/
-     */
+
     public static class Icons {
+        // Logo icon (asal bae ngambil)
+        public static final String LOGO = "logo.png";
+
         // Navigation icons
         public static final String HOME = "home.png";
         public static final String NOW_PLAYING = "nowplaying.png";
@@ -34,9 +32,9 @@ public class IconLoader {
         public static final String NEXT = "next.png";
         public static final String PREVIOUS = "previous.png";
         public static final String SHUFFLE = "shuffle.png";
-        public static final String SHUFFLE_ON = "shuffle_on.png";  // Optional: different icon when active
+        public static final String SHUFFLE_ON = "shuffle_on.png";
         public static final String REPEAT = "repeat.png";
-        public static final String REPEAT_ON = "repeat_on.png";    // Optional: different icon when active
+        public static final String REPEAT_ON = "repeat_on.png";
 
         // Volume icons
         public static final String VOLUME = "volume.png";
@@ -56,6 +54,7 @@ public class IconLoader {
         public static final String WARNING = "warning.png";
 
         // Music icons
+        public static final String MUSICLIBRARY = "musiclibrary.png";
         public static final String MUSIC = "music.png";
         public static final String ALBUM = "album.png";
         public static final String ARTIST = "artist.png";
@@ -63,14 +62,14 @@ public class IconLoader {
     }
 
     /**
-     * Load icon dengan ukuran default (24x24)
+     * Load icon size default 24 x 24
      */
     public static ImageIcon loadIcon(String iconName) {
         return loadIcon(iconName, 24, 24);
     }
 
     /**
-     * Load icon dengan ukuran spesifik
+     * Load icon spec size
      */
     public static ImageIcon loadIcon(String iconName, int width, int height) {
         try {
@@ -94,21 +93,21 @@ public class IconLoader {
     }
 
     /**
-     * Load icon untuk button (auto-size 24x24)
+     * Load icon untuk button
      */
     public static ImageIcon loadButtonIcon(String iconName) {
         return loadIcon(iconName, 24, 24);
     }
 
     /**
-     * Load icon untuk sidebar navigation (auto-size 20x20)
+     * Load icon untuk sidebar navigation
      */
     public static ImageIcon loadNavIcon(String iconName) {
         return loadIcon(iconName, 20, 20);
     }
 
     /**
-     * Load icon untuk large button (auto-size 32x32)
+     * Load icon untuk large button
      */
     public static ImageIcon loadLargeIcon(String iconName) {
         return loadIcon(iconName, 32, 32);

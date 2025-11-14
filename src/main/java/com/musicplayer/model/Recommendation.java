@@ -1,8 +1,6 @@
 package com.musicplayer.model;
 
-/**
- * Model untuk rekomendasi lagu
- */
+// Model buat rekomendasi lagu
 public class Recommendation {
     private Track track;
     private double score;

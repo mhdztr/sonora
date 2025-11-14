@@ -10,17 +10,15 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 
-/**
- * Enhanced Fingerprint Panel dengan "Search in Player" feature
- */
 public class FingerprintPanel extends JPanel {
     private MusicPlayerController controller;
-    private MainFrame mainFrame; // Reference to switch tabs
+    private MainFrame mainFrame;
 
     private JButton recordButton;
     private JButton uploadButton;
     private JPanel resultPanel;
     private JLabel statusLabel;
+    private JLabel statusIconLabel;
     private boolean isRecording = false;
 
     private Track identifiedTrack;
@@ -32,13 +30,14 @@ public class FingerprintPanel extends JPanel {
     }
 
     private void initializeComponents() {
-        setLayout(new MigLayout("fill, insets 40", "[center]", "[]30[]30[]push"));
+        setLayout(new MigLayout("fill, insets 40", "[center]", "[]30[]30[]20[]push"));
         setBackground(new Color(30, 30, 35));
 
         // Title
         JLabel titleLabel = new JLabel("Identify Song");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 32));
         titleLabel.setForeground(Color.WHITE);
+        titleLabel.setIcon(IconLoader.loadLargeIcon(IconLoader.Icons.FINGERPRINT));
         add(titleLabel, "wrap, center");
 
         JLabel subtitleLabel = new JLabel("Record audio or upload a file to identify the song");
@@ -50,14 +49,14 @@ public class FingerprintPanel extends JPanel {
         JPanel buttonsPanel = new JPanel(new MigLayout("insets 0", "[]20[]", "[]"));
         buttonsPanel.setOpaque(false);
 
-        recordButton = new JButton("Record from Mic", IconLoader.loadButtonIcon((IconLoader.Icons.RECORD)));
+        recordButton = new JButton("Record from Mic", IconLoader.loadButtonIcon(IconLoader.Icons.RECORD));
         recordButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
         recordButton.setPreferredSize(new Dimension(200, 60));
         recordButton.setFocusPainted(false);
         recordButton.addActionListener(e -> toggleRecording());
         buttonsPanel.add(recordButton);
 
-        uploadButton = new JButton("Upload Audio File", IconLoader.loadButtonIcon((IconLoader.Icons.UPLOAD)));
+        uploadButton = new JButton("Upload Audio File", IconLoader.loadButtonIcon(IconLoader.Icons.UPLOAD));
         uploadButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
         uploadButton.setPreferredSize(new Dimension(200, 60));
         uploadButton.setFocusPainted(false);
@@ -66,13 +65,21 @@ public class FingerprintPanel extends JPanel {
 
         add(buttonsPanel, "wrap, center");
 
-        // Status label
+        // Status panel with icon and text
+        JPanel statusPanel = new JPanel(new MigLayout("insets 0", "[]10[]", ""));
+        statusPanel.setOpaque(false);
+
+        statusIconLabel = new JLabel();
+        statusPanel.add(statusIconLabel);
+
         statusLabel = new JLabel(" ");
         statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        statusLabel.setForeground(new Color(100, 200, 100));
-        add(statusLabel, "wrap, center, gaptop 20");
+        statusLabel.setForeground(new Color(150, 150, 150));
+        statusPanel.add(statusLabel);
 
-        // Result panel (will show track info + "Search in Player" button)
+        add(statusPanel, "wrap, center, gaptop 10");
+
+        // Result panel
         resultPanel = new JPanel();
         resultPanel.setOpaque(false);
         add(resultPanel, "grow, width 60%, center");
@@ -88,10 +95,14 @@ public class FingerprintPanel extends JPanel {
 
     private void startRecording() {
         isRecording = true;
-        recordButton.setText("⏹️ Stop Recording");
+        recordButton.setText("Stop Recording");
+        recordButton.setIcon(IconLoader.loadButtonIcon(IconLoader.Icons.STOP));
         recordButton.setBackground(new Color(200, 50, 50));
-        statusLabel.setText("🔴 Recording... (speak or play music near your microphone)");
+
+        statusIconLabel.setIcon(IconLoader.loadButtonIcon(IconLoader.Icons.RECORD));
+        statusLabel.setText("Recording... (play music near your microphone)");
         statusLabel.setForeground(new Color(255, 100, 100));
+
         resultPanel.removeAll();
         resultPanel.revalidate();
         resultPanel.repaint();
@@ -121,8 +132,11 @@ public class FingerprintPanel extends JPanel {
         isRecording = false;
         recordButton.setEnabled(false);
         recordButton.setText("Processing...");
+        recordButton.setIcon(IconLoader.loadButtonIcon(IconLoader.Icons.LOADING));
         recordButton.setBackground(null);
-        statusLabel.setText("⏳ Processing audio and identifying...");
+
+        statusIconLabel.setIcon(IconLoader.loadButtonIcon(IconLoader.Icons.LOADING));
+        statusLabel.setText("Processing audio and identifying...");
         statusLabel.setForeground(new Color(255, 200, 100));
 
         // Stop recording and identify
@@ -170,8 +184,11 @@ public class FingerprintPanel extends JPanel {
     private void identifyFile(File file) {
         uploadButton.setEnabled(false);
         recordButton.setEnabled(false);
-        statusLabel.setText("⏳ Identifying song...");
+
+        statusIconLabel.setIcon(IconLoader.loadButtonIcon(IconLoader.Icons.LOADING));
+        statusLabel.setText("Identifying song...");
         statusLabel.setForeground(new Color(255, 200, 100));
+
         resultPanel.removeAll();
         resultPanel.revalidate();
         resultPanel.repaint();
@@ -198,15 +215,13 @@ public class FingerprintPanel extends JPanel {
         worker.execute();
     }
 
-    /**
-     * Display result dengan track card + "Search in Player" button
-     */
     private void displayResult(Track track) {
         resultPanel.removeAll();
 
         if (track != null) {
             identifiedTrack = track;
-            statusLabel.setText("✅ Song Identified!");
+            statusIconLabel.setIcon(IconLoader.loadButtonIcon(IconLoader.Icons.SUCCESS));
+            statusLabel.setText("Song Identified!");
             statusLabel.setForeground(new Color(100, 255, 100));
 
             // Create result card
@@ -217,30 +232,38 @@ public class FingerprintPanel extends JPanel {
             // Save to database
             controller.saveTrack(track);
         } else {
-            statusLabel.setText("❌ Song Not Found");
+            statusIconLabel.setIcon(IconLoader.loadButtonIcon(IconLoader.Icons.ERROR));
+            statusLabel.setText("Song Not Found");
             statusLabel.setForeground(new Color(255, 100, 100));
 
-            JLabel noResultLabel = new JLabel("<html><center>" +
-                    "Sorry, we couldn't identify this song.<br><br>" +
+            JPanel noResultPanel = new JPanel(new MigLayout("fillx, wrap 1", "[center]", "[]10[]"));
+            noResultPanel.setOpaque(false);
+
+            JLabel noResultLabel = new JLabel("Sorry, we couldn't identify this song.");
+            noResultLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
+            noResultLabel.setForeground(new Color(200, 200, 200));
+            noResultLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            noResultPanel.add(noResultLabel, "center");
+
+            JLabel tipsLabel = new JLabel("<html><center>" +
                     "<b>Tips:</b><br>" +
                     "• Make sure the audio is clear<br>" +
                     "• Try recording for at least 5-10 seconds<br>" +
                     "• Reduce background noise if possible" +
                     "</center></html>");
-            noResultLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            noResultLabel.setForeground(new Color(150, 150, 150));
-            noResultLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            tipsLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            tipsLabel.setForeground(new Color(150, 150, 150));
+            tipsLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            noResultPanel.add(tipsLabel, "center, gaptop 10");
+
             resultPanel.setLayout(new BorderLayout());
-            resultPanel.add(noResultLabel, BorderLayout.CENTER);
+            resultPanel.add(noResultPanel, BorderLayout.CENTER);
         }
 
         resultPanel.revalidate();
         resultPanel.repaint();
     }
 
-    /**
-     * Create result card with track info + "Search in Player" button
-     */
     private JPanel createResultCard(Track track) {
         JPanel card = new JPanel(new MigLayout("fill, insets 20", "[150!]20[grow]", "[][][]20[]"));
         card.setBackground(new Color(45, 45, 50));
@@ -283,8 +306,9 @@ public class FingerprintPanel extends JPanel {
             card.add(albumLabel, "wrap");
         }
 
-        // "Search in Player" button - BIG & PROMINENT
-        JButton searchInPlayerButton = new JButton("Search in Player", IconLoader.loadButtonIcon(IconLoader.Icons.SEARCH));
+        // "Search in Player" button
+        JButton searchInPlayerButton = new JButton("Search in Player",
+                IconLoader.loadButtonIcon(IconLoader.Icons.SEARCH));
         searchInPlayerButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
         searchInPlayerButton.setFocusPainted(false);
         searchInPlayerButton.setBackground(new Color(100, 100, 255));
@@ -297,17 +321,10 @@ public class FingerprintPanel extends JPanel {
         return card;
     }
 
-    /**
-     * Search in player - switch to Library tab and search
-     */
     private void searchInPlayer(Track track) {
-        // Build search query: "artist title"
         String searchQuery = track.getArtist() + " " + track.getTitle();
-
-        // Switch to Library tab
         mainFrame.showLibraryAndSearch(searchQuery);
 
-        // Show confirmation
         JOptionPane.showMessageDialog(this,
                 "Searching for: " + searchQuery,
                 "Search in Player",
@@ -315,7 +332,8 @@ public class FingerprintPanel extends JPanel {
     }
 
     private void showError(String message) {
-        statusLabel.setText("❌ Error");
+        statusIconLabel.setIcon(IconLoader.loadButtonIcon(IconLoader.Icons.ERROR));
+        statusLabel.setText("Error");
         statusLabel.setForeground(new Color(255, 100, 100));
 
         JLabel errorLabel = new JLabel("<html><center>Error: " + message + "</center></html>");
@@ -333,7 +351,8 @@ public class FingerprintPanel extends JPanel {
     private void resetRecording() {
         isRecording = false;
         recordButton.setEnabled(true);
-        recordButton.setText("🎤 Record from Mic");
+        recordButton.setText("Record from Mic");
+        recordButton.setIcon(IconLoader.loadButtonIcon(IconLoader.Icons.RECORD));
         recordButton.setBackground(null);
     }
 }
