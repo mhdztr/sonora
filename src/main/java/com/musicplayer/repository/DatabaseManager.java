@@ -7,10 +7,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Manager untuk database lokal H2
- * Menyimpan tracks, play history, dan preferences
- */
+
+// Manager database lokal H2, simpen tracks, play history, preferences
 public class DatabaseManager {
     private static final String DB_URL = "jdbc:h2:./data/musicplayer;AUTO_SERVER=TRUE";
 
@@ -33,9 +31,7 @@ public class DatabaseManager {
         return instance;
     }
 
-    /**
-     * Inisialisasi tabel database
-     */
+
     private void initializeTables() throws SQLException {
         String createTracksTable = """
             CREATE TABLE IF NOT EXISTS tracks (
@@ -70,9 +66,6 @@ public class DatabaseManager {
         }
     }
 
-    /**
-     * Simpan atau update track
-     */
     public void saveTrack(Track track) throws SQLException {
         String sql = """
             MERGE INTO tracks (id, title, artist, album, genre, duration, 
@@ -96,9 +89,6 @@ public class DatabaseManager {
         }
     }
 
-    /**
-     * Ambil track berdasarkan ID
-     */
     public Track getTrack(String trackId) throws SQLException {
         String sql = "SELECT * FROM tracks WHERE id = ?";
 
@@ -113,9 +103,7 @@ public class DatabaseManager {
         return null;
     }
 
-    /**
-     * Ambil semua tracks
-     */
+
     public List<Track> getAllTracks() throws SQLException {
         List<Track> tracks = new ArrayList<>();
         String sql = "SELECT * FROM tracks ORDER BY added_date DESC";
@@ -129,9 +117,6 @@ public class DatabaseManager {
         return tracks;
     }
 
-    /**
-     * Catat pemutaran lagu
-     */
     public void recordPlay(String trackId) throws SQLException {
         String sql = """
             INSERT INTO play_history (track_id, played_at, play_count)
@@ -145,9 +130,7 @@ public class DatabaseManager {
         }
     }
 
-    /**
-     * Ambil riwayat pemutaran
-     */
+
     public List<PlayHistory> getPlayHistory(int limit) throws SQLException {
         List<PlayHistory> history = new ArrayList<>();
         String sql = "SELECT * FROM play_history ORDER BY played_at DESC LIMIT ?";
@@ -169,9 +152,7 @@ public class DatabaseManager {
         return history;
     }
 
-    /**
-     * Ambil tracks yang paling sering diputar
-     */
+
     public List<Track> getMostPlayedTracks(int limit) throws SQLException {
         List<Track> tracks = new ArrayList<>();
         String sql = """
@@ -194,9 +175,7 @@ public class DatabaseManager {
         return tracks;
     }
 
-    /**
-     * Helper untuk mapping ResultSet ke Track
-     */
+
     private Track mapTrack(ResultSet rs) throws SQLException {
         Track track = new Track();
         track.setId(rs.getString("id"));
